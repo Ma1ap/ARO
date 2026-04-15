@@ -1,0 +1,11 @@
+name: Build Dev Image
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: docker build -t firewall-checker:dev .
