@@ -1,0 +1,9 @@
+# Firewall Connectivity Checker (DevSpaces + Prometheus + Auth)
+
+## Run locally
+```bash
+cd firewall-checker
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+AUTH_MODE=basic BASIC_AUTH_USER=admin BASIC_AUTH_PASS=admin \
+python -m uvicorn app.main:app --host 127.0.0.1 --port 3100 --reload

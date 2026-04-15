@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firewall-checker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: firewall-checker
+  template:
+    metadata:
+      labels:
+        app: firewall-checker
+    spec:
+      containers:
+      - name: firewall-checker
+        image: firewall-checker:latest
+        ports:
+        - containerPort: 3100
+        env:
+        - name: APP_PORT
+          value: "3100"
+        - name: BIND_HOST
+          value: "0.0.0.0"
+        - name: INTERVAL_SECONDS
+          value: "60"
+        - name: TIMEOUT_SECONDS
+          value: "5"
+        - name: CONFIG_PATH
+          value: "/app/config/checks.conf"
+        - name: AUTH_MODE
+          value: "basic"
+        - name: BASIC_AUTH_USER
+          value: "admin"
+        - name: BASIC_AUTH_PASS
+          value: "admin"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: firewall-checker-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: firewall-checker-config
+data:
+  checks.conf: |
+    # Firewall connectivity checks
+    # Format: kind,target,port
+    curl,httpbin.org,80
+    telnet,google.com,80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: firewall-checker
+spec:
+  selector:
+    app: firewall-checker
+  ports:
+  - port: 3100
+    targetPort: 3100
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: firewall-checker
+spec:
+  to:
+    kind: Service
+    name: firewall-checker
+  port:
+    targetPort: 3100
+  tls:
+    termination: edge

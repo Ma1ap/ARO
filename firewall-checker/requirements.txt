@@ -3,3 +3,8 @@ uvicorn[standard]
 httpx
 APScheduler
 
+prometheus-client
+prometheus-fastapi-instrumentator
+
+authlib
+``

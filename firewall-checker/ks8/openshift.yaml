@@ -36,6 +36,14 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: firewall-checker
+  
+ labels:
+    app: firewall-checker
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3100"
+    prometheus.io/path: "/metrics"
+
 spec:
   to:
     kind: Service
