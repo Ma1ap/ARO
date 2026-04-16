@@ -1,16 +1,25 @@
-schemaVersion: 2.2.0
-metadata:
-  name: firewall-checker
 components:
   - name: runtime
     container:
       image: python:3.11-slim
-      command: ["bash", "-lc", "pip install -r requirements.txt && python -m uvicorn app.main:app --host ${BIND_HOST:-127.0.0.1} --port 3100 --reload"]
+
+      # ✅ FIX 1: correct shell operator &&
+      command:
+        - bash
+        - -lc
+        - |
+          pip install -r requirements.txt && \
+          python -m uvicorn app.main:app \
+            --host ${BIND_HOST:-127.0.0.1} \
+            --port 3100 \
+            --reload
+
       mountSources: true
+      sourceMapping: /projects
+
       env:
         - name: APP_PORT
           value: "3100"
-        # For DevSpaces secure endpoint, bind to loopback as recommended by devfile docs.
         - name: BIND_HOST
           value: "127.0.0.1"
         - name: INTERVAL_SECONDS
@@ -19,12 +28,19 @@ components:
           value: "5"
         - name: CONFIG_PATH
           value: "/projects/firewall-checker/config/checks.conf"
-        # Auth modes: none | basic | oidc
+
+        # ✅ FIX 2: add Basic Auth credentials
         - name: AUTH_MODE
           value: "basic"
+        - name: BASIC_AUTH_USER
+          value: "admin"
+        - name: BASIC_AUTH_PASS
+          value: "admin"
+
       endpoints:
         - name: web
           targetPort: 3100
           exposure: public
           protocol: https
           secure: true
+``
