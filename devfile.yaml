@@ -1,46 +1,39 @@
-components:
-  - name: runtime
-    container:
-      image: python:3.11-slim
+- name: runtime
+  container:
+    image: python:3.11-slim
+    mountSources: true
+    sourceMapping: /projects
 
-      # ✅ FIX 1: correct shell operator &&
-      command:
-        - bash
-        - -lc
-        - |
-          pip install -r requirements.txt && \
-          python -m uvicorn app.main:app \
-            --host ${BIND_HOST:-127.0.0.1} \
-            --port 3100 \
-            --reload
+    command:
+      - bash
+      - -lc
+      - |
+        cd /projects/aro/firewall-checker && \
+        pip install -r requirements.txt && \
+        python -m uvicorn app.main:app \
+          --host ${BIND_HOST:-127.0.0.1} \
+          --port 3100 \
+          --reload
 
-      mountSources: true
-      sourceMapping: /projects
+    env:
+      - name: BIND_HOST
+        value: "127.0.0.1"
+      - name: INTERVAL_SECONDS
+        value: "60"
+      - name: TIMEOUT_SECONDS
+        value: "5"
+      - name: CONFIG_PATH
+        value: "/projects/aro/firewall-checker/config/checks.conf"
+      - name: AUTH_MODE
+        value: "basic"
+      - name: BASIC_AUTH_USER
+        value: "admin"
+      - name: BASIC_AUTH_PASS
+        value: "admin"
 
-      env:
-        - name: APP_PORT
-          value: "3100"
-        - name: BIND_HOST
-          value: "127.0.0.1"
-        - name: INTERVAL_SECONDS
-          value: "60"
-        - name: TIMEOUT_SECONDS
-          value: "5"
-        - name: CONFIG_PATH
-          value: "/projects/firewall-checker/config/checks.conf"
-
-        # ✅ FIX 2: add Basic Auth credentials
-        - name: AUTH_MODE
-          value: "basic"
-        - name: BASIC_AUTH_USER
-          value: "admin"
-        - name: BASIC_AUTH_PASS
-          value: "admin"
-
-      endpoints:
-        - name: web
-          targetPort: 3100
-          exposure: public
-          protocol: https
-          secure: true
-``
+    endpoints:
+      - name: web
+        targetPort: 3100
+        exposure: public
+        protocol: https
+        secure: true
